@@ -63,11 +63,12 @@ class Graph constructor(private val context: Activity, private val callback: Dat
                     hand.landmarkList.forEachIndexed { i, landmark ->
                         if (i > 0) builder.append(",")
                         builder.append(
-                                "{\"x\":${landmark.x}," +
-                                "{\"y\":${landmark.y}," +
-                                "{\"z\":${landmark.z}," +
-                                "{\"presence\":${landmark.presence}," +
-                                "{\"visibility\":${landmark.visibility}" +
+                                "{" +
+                                "\"x\":${landmark.x}," +
+                                "\"y\":${landmark.y}," +
+                                "\"z\":${landmark.z}," +
+                                "\"presence\":${landmark.presence}," +
+                                "\"visibility\":${landmark.visibility}" +
                                 "}")
                     }
                     builder.append("]}")
