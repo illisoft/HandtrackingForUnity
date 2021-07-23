@@ -51,7 +51,6 @@ class Graph constructor(private val context: Activity, private val callback: Dat
 
         ///region callbacks
         graph.addPacketCallback(OUTPUT_LANDMARKS_STREAM_NAME) { packet ->
-            Log.v(TAG, "Received multi-hand landmarks packet.")
             try {
                 var hands = PacketGetter.getProtoVector(packet, LandmarkProto.NormalizedLandmarkList.parser())
                 val builder = StringBuilder()
