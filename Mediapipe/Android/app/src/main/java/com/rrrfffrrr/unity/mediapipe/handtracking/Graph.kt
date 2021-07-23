@@ -8,8 +8,9 @@ import com.google.mediapipe.framework.*
 import com.google.mediapipe.glutil.EglManager
 import java.util.concurrent.atomic.AtomicBoolean
 
+
 @Suppress("unused")
-class Graph constructor(private val context: Activity, private val callback: DataCallback) {
+class Graph constructor(private val context: Activity, private val callback: DataCallback, numHands: Int = 2) {
     companion object {
         const val TAG = "hand_tracking"
 
@@ -45,7 +46,7 @@ class Graph constructor(private val context: Activity, private val callback: Dat
 
         graph.setParentGlContext(eglManager.nativeContext)
 
-        inputSidePackets[INPUT_NUM_HANDS_SIDE_PACKET_NAME] = packetCreator.createInt32(MAX_NUM_HANDS)
+        inputSidePackets[INPUT_NUM_HANDS_SIDE_PACKET_NAME] = packetCreator.createInt32(numHands.coerceIn(1, MAX_NUM_HANDS))
         graph.setInputSidePackets(inputSidePackets)
 
         ///region callbacks
@@ -53,17 +54,27 @@ class Graph constructor(private val context: Activity, private val callback: Dat
             Log.v(TAG, "Received multi-hand landmarks packet.")
             try {
                 var hands = PacketGetter.getProtoVector(packet, LandmarkProto.NormalizedLandmarkList.parser())
-                val list = mutableListOf<Float>()
-                hands.forEach { hand ->
-                    hand.landmarkList.forEach { landmark ->
-                        list.add(landmark.x)
-                        list.add(landmark.y)
-                        list.add(landmark.z)
-                        list.add(landmark.presence)
-                        list.add(landmark.visibility)
+                val builder = StringBuilder()
+
+                builder.append("{\"timestamp\": ${packet.timestamp},\"hands\":[")
+                hands.forEachIndexed { i, hand ->
+                    if (i > 0) builder.append(",")
+                    builder.append("{\"landmarks\":[")
+                    hand.landmarkList.forEachIndexed { i, landmark ->
+                        if (i > 0) builder.append(",")
+                        builder.append(
+                                "{\"x\":${landmark.x}," +
+                                "{\"y\":${landmark.y}," +
+                                "{\"z\":${landmark.z}," +
+                                "{\"presence\":${landmark.presence}," +
+                                "{\"visibility\":${landmark.visibility}" +
+                                "}")
                     }
+                    builder.append("]}")
                 }
-                callback.onData(list.toFloatArray())
+                builder.append("]}")
+
+                callback.onData(builder.toString())
             } catch (e: Exception) {
                 Log.e(TAG, "Error while get packet: ", e)
             }
