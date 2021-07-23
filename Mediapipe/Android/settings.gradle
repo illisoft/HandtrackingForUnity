@@ -1,0 +1,3 @@
+include ':mediapipe_hand_tracking'
+include ':app'
+rootProject.name = "unity_handtracking"
